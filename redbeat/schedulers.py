@@ -269,8 +269,12 @@ class RedBeatSchedulerEntry(ScheduleEntry):
             'schedule': self.schedule,
             'enabled': self.enabled,
         }
+        meta = {
+            'last_run_at': self.last_run_at,
+        }
         with get_redis(self.app).pipeline() as pipe:
             pipe.hset(self.key, 'definition', json.dumps(definition, cls=RedBeatJSONEncoder))
+            pipe.hsetnx(self.key, 'meta', json.dumps(meta, cls=RedBeatJSONEncoder))
             pipe.zadd(self.app.redbeat_conf.schedule_key, self.score, self.key)
             pipe.execute()
 
